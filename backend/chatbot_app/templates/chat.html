@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HR Chatbot</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .chat-container {
+            background-color: white;
+            width: 100%;
+            max-width: 700px;
+            margin: 40px auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #chatbox {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            background-color: #fafafa;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 12px;
+            max-width: 80%;
+            line-height: 1.5;
+            clear: both;
+        }
+
+        .user {
+            background-color: #d1e7ff;
+            float: right;
+            text-align: right;
+        }
+
+        .bot {
+            background-color: #e2f7e1;
+            float: left;
+        }
+
+        .sources {
+            font-size: 0.85em;
+            margin-top: 5px;
+            color: #888;
+            clear: both;
+        }
+
+        form {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+            font-size: 1em;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>HR Chatbot</h1>
+
+        <!-- Chat Area -->
+        <div id="chatbox"></div>
+
+        <!-- Input Form -->
+        <form id="chat-form">
+            <input type="text" id="user-input" placeholder="Type your question..." required />
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const chatbox = document.getElementById('chatbox');
+        const form = document.getElementById('chat-form');
+        const input = document.getElementById('user-input');
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Append user message
+            chatbox.innerHTML += `<div class="message user"><strong>You:</strong> ${message}</div>`;
+            input.value = '';
+            input.focus();
+
+            try {
+                const response = await fetch("/chat_api/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ query: message })
+                });
+
+                const data = await response.json();
+
+                if (data.response) {
+                    chatbox.innerHTML += `<div class="message bot"><strong>Bot:</strong> ${data.response}</div>`;
+
+                    if (data.sources && data.sources.length > 0) {
+                        chatbox.innerHTML += `<div class="sources"><strong>Sources:</strong> ${data.sources.join(', ')}</div>`;
+                    }
+                } else {
+                    chatbox.innerHTML += `<div class="message bot"><strong>Bot:</strong> Sorry, something went wrong.</div>`;
+                }
+
+            } catch (err) {
+                chatbox.innerHTML += `<div class="message bot"><strong>Bot:</strong> Error: ${err.message}</div>`;
+            }
+
+            // Scroll to bottom
+            chatbox.scrollTop = chatbox.scrollHeight;
+        };
+
+        // CSRF token helper
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+Django==4.2
+qdrant-client
+sentence-transformers
+python-dotenv
+python-docx
+langchain 
+langchain-google-genai 
+google-generativeai 
+"pymongo[srv]==3.6"
+mongoengine

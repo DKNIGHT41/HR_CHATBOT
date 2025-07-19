@@ -1,0 +1,15 @@
+# ========== FRONTEND ==========
+/frontend/node_modules/
+/frontend/.env
+/frontend/build/
+/frontend/dist/
+
+# ========== BACKEND ==========
+/backend/__pycache__/
+/backend/.env
+/backend/db.sqlite3
+*.pyc
+
+# ========== COMMON ==========
+*.log
+.DS_Store
